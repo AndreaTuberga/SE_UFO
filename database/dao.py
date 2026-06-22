@@ -66,6 +66,7 @@ class DAO:
         conn.close()  # chiudo la connessione
         return result  # restituisco il "result" -> una lista di str "shape"
 
+    # metodo per definire gli archi e il loro peso
     @staticmethod
     def get_all_weighted_neigh(year, shape):
         conn = DBConnect.get_connection()
@@ -84,7 +85,7 @@ class DAO:
         cursor.execute(query, (year, shape))
 
         for row in cursor:
-            result.append((row['st1'], row['st2'], row["N"])) #appendo i due stati e il numero di avvistamenti
+            result.append((row['st1'], row['st2'], row["N"])) #restituisco i due stati e il numero di avvistamenti
 
         cursor.close()
         conn.close()

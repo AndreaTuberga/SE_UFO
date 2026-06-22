@@ -5,9 +5,10 @@ from geopy import distance
 
 class Model:
     def __init__(self):
-        self.list_sighting = []
-        self.list_shapes = []
-        self.list_states = []
+        # dichiaro le liste che conterranno
+        self.list_sighting = [] # <- il dizionario con gli avvistamenti
+        self.list_shapes = [] # <- le forme
+        self.list_states = [] # <- il dizionario con gli stati
 
         # chiamo i metodi direttamente "nel main" -> per riempire direttamente le liste
         self.load_sighting()
@@ -38,22 +39,23 @@ class Model:
     #metodo per creare il grafo
     def build_graph(self, s, a):
         self.G.clear() #pulisco il grafo come primissima cosa
-        print(a, s)
 
-        for p in self.list_states: #per ogni nodo (stato) nella lista di stata
-            self._nodes.append(p) #riempio la lista di nodi con i vari nodi (stati)
+        for stato in self.list_states: #per ogni nodo (stato) nella lista di stata
+            self._nodes.append(stato) #riempio la lista di nodi con i vari nodi (stati)
+        # i nodi sono dizionari, con chiave primaria l'id, e contententi le altre variabili
 
         self.G.add_nodes_from(self._nodes) #aggiungo i nodi al grafo
         self.id_map = {}
         for n in self._nodes: #per ogni nodo nella lista di nodi
             self.id_map[n.id] = n #aggiungo i nodi nella mappa, con chiave l'id e valore il nodo
 
-        tmp_edges = DAO.get_all_weighted_neigh(a, s)
+        tmp_edges = DAO.get_all_weighted_neigh(a, s) #prendo i due stati (nodi) e il peso dell'arco associato
 
-        self._edges.clear() #pulisco la lingua di edges
+        self._edges.clear() #pulisco la lista di edges
         # aggiungo nella lista: il primo oggetto 'st1', il secondo oggetto 'st2' e il numero di casi 'N'
-        for e in tmp_edges:
+        for e in tmp_edges: # "e" contiene 2 nodi + il peso dell'arco associato
             self._edges.append((self.id_map[e[0]], self.id_map[e[1]], e[2]))
+            #appendo le iformazioni del primo nodo, quelle del secondo e il peso del loro arco
 
         self.G.add_weighted_edges_from(self._edges)
 
@@ -79,6 +81,7 @@ class Model:
     def get_num_of_edges(self):
         return self.G.number_of_edges()
 
+    # ----- inizio delle funzioni per la ricorsione -----
     def compute_path(self):
         self.path = []
         self.path_edge = []
@@ -91,7 +94,7 @@ class Model:
             partial.append(n) #appendo il nodo nella lista
             self._ricorsione(partial, []) #parto con la ricorsione, passando il nodo e la lista di archi
 
-    def _ricorsione(self, partial, partial_edge):
+    def _ricorsione(self, partial, partial_edge): # <--- funzione per la ricorsione
         n_last = partial[-1]
 
         neighbors = self.get_admissible_neighbs(n_last, partial_edge) #analizzo tutti i possibili vicini
@@ -114,10 +117,10 @@ class Model:
             partial_edge.pop() #cancello gli archi (tornando su) per ripartire con la ricorsione
 
     def get_admissible_neighbs(self, n_last, partial_edges):
-        all_neigh = self.G.edges(n_last, data=True)
+        all_neigh = self.G.edges(n_last, data=True) # prendo gli archi connessi al nodo passato
         result = []
 
-        for e in all_neigh:
+        for e in all_neigh: # per controllo il peso di tutti gli archi
             if len(partial_edges) != 0:
                 if e[2]["weight"] > partial_edges[-1][2]:
                     result.append(e[1])

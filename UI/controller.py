@@ -7,14 +7,16 @@ class Controller:
         self._list_year = []
         self._list_shape = []
 
+    # ----- metodo per popolare i dropdown -----
     def populate_dd(self):
-        """ Metodo per popolare i dropdown """
+
+        # riempio la lista degli AVVISTAMENTI
         sighting_list = self._model.list_sighting
 
-        #riempio la lista con le shapes
+        #riempio la lista con le SHAPES
         self._list_shape =self._model.list_shapes
 
-        # riempio la lista con gli anni (non ripetuti)
+        # riempio la lista con gli ANNI (non ripetuti)
         for n in sighting_list: #per ogni avvistamento
             if n.s_datetime.year not in self._list_year: #se l'anno non è ancora presente nella lista
                 self._list_year.append(n.s_datetime.year) #aggiungo l'anno alla lista
@@ -29,10 +31,21 @@ class Controller:
 
         self._view.update()
 
+    # ----- handler per gestire creazione del grafo -----
     def handle_graph(self, e):
-        """ Handler per gestire creazione del grafo """
-        selected_year = self._view.dd_year.value #prendo l'anno selezionato dal dropdown
+
+        # seguono due alternative per gestire le eccezioni
+        # versione 1
+        try:
+            selected_year = int(self._view.dd_year.value) #prendo l'anno selezionato dal dropdown
+        except Exception:
+            self._view.show_alert("Anno Invalido")
+            return
+        #versione 2
         selected_shape = self._view.dd_shape.value #prendo la forma selezionata dal dropdown
+        if selected_shape is None:
+            self._view.show_alert("Forma Invalida")
+            return
 
         #pulisco la view dove stamperò il risultato
         self._view.lista_visualizzazione_1.clean()
@@ -56,8 +69,8 @@ class Controller:
 
         self._view.update()
 
+    # ----- Handler per gestire il problema ricorsivo di ricerca del cammino -----
     def handle_path(self, e):
-        """ Handler per gestire il problema ricorsivo di ricerca del cammino """
         self._model.compute_path()
 
         #pulisce area percorso
